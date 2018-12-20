@@ -35,7 +35,7 @@ proc overlap(newclaim: Claim, claims: seq[Claim]): HashSet[Square] =
       for y in ystart..yend:
         result.incl((x, y))
 
-for line in "puzzle3".lines:
+for line in "data".lines:
   let claim = buildClaim(line)
   squares.incl(overlap(claim, claims))
   claims.add(claim)
