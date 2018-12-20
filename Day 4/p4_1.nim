@@ -7,9 +7,9 @@ type
   Action = enum Sleeps, WakesUp
   Item = tuple[id: int, dt: DateTime, act: Action]
 
-var history: seq[Item]
-
-var sleeptime = initCountTable[int]()
+var
+  history: seq[Item]
+  sleeptime = initCountTable[int]()
 
 proc extractId(line: string): int =
   var idx = 25
