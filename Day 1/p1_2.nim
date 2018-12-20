@@ -9,14 +9,14 @@ freqset.incl(0)
 for line in "data".lines:
   changelist.add(line.parseInt())
 
-## Yield the next change looping in the list of changes.
-iterator freqchanges(): int =
+# Yield the next change looping in the list of changes.
+iterator freqchanges(changelist: seq[int]): int =
   while true:
     for change in changelist:
       yield change
 
 var freq = 0
-for change in freqchanges():
+for change in changelist.freqchanges():
   freq += change
   if freq in freqset:
     break
