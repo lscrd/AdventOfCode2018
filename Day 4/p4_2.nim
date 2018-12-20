@@ -8,7 +8,6 @@ type
   Item = tuple[id: int, dt: DateTime, act: Action]
 
 var history: seq[Item]
-
 var sleeptime = initTable[int, seq[int]]()
 
 proc extractId(line: string): int =
