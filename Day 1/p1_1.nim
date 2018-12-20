@@ -1,7 +1,7 @@
 import strutils
 
 var freq = 0
-for line in "puzzle1".lines:
+for line in "data".lines:
   freq += line.parseInt()
 
 echo freq
