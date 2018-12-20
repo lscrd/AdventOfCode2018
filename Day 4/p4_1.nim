@@ -4,7 +4,6 @@ import tables
 import times
 
 type
-
   Action = enum Sleeps, WakesUp
   Item = tuple[id: int, dt: DateTime, act: Action]
 
