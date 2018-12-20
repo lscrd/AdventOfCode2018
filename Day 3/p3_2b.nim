@@ -32,7 +32,7 @@ proc overlaps(newclaim: Claim, claims: seq[Claim]): seq[int] =
   if result.len > 0:
     result.add(newclaim.id)
 
-for line in "puzzle3".lines:
+for line in "data".lines:
   let claim = buildClaim(line)
   let ids = overlaps(claim, claims)
   if ids.len > 0:
