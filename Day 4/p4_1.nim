@@ -20,7 +20,7 @@ proc extractId(line: string): int =
     result = 10 * result + ord(c) - ord('0')
 
 var lines: seq[string]
-for line in "puzzle4".lines:
+for line in "data".lines:
   lines.add(line)
 lines.sort(system.cmp)
 
