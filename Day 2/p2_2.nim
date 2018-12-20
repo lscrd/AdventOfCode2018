@@ -1,7 +1,7 @@
 import strutils
 import sequtils
 
-var ids = toseq("puzzle2".lines)
+var ids = toseq("data".lines)
 
 let idmaxidx = ids[0].high  # Maximum index for ids.
 
