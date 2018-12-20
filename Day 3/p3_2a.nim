@@ -37,7 +37,7 @@ proc update(overlap: var seq[bool], idx: int, claims: seq[Claim]): bool =
     overlap[idx] = true
 
 # Build the list of claims.
-for line in "puzzle3".lines:
+for line in "data".lines:
   claims.add(buildClaim(line))
 overlap.setLen(claims.len)
 
