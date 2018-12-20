@@ -2,7 +2,7 @@ import tables
 
 var count2, count3 = 0
 
-for line in "puzzle2".lines:
+for line in "data".lines:
   let counts = line.toCountTable()
   var has2, has3 = false
   for count in counts.values:
