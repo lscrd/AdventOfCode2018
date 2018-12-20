@@ -6,7 +6,7 @@ var freqset = initIntSet()
 freqset.incl(0)
 
 # Read the list for frequencies.
-for line in "puzzle1".lines:
+for line in "data".lines:
   changelist.add(line.parseInt())
 
 ## Yield the next change looping in the list of changes.
