@@ -72,7 +72,7 @@ echo "Part 1: ", firstR4
 const optimizedVersion = true
 
 when not optimizedVersion:
-  # The following code is the normal way to do that, but is is slow.
+  # The following code is the normal way to do that, but it is slow.
   pc = 0
   regs = [0, 0, 0, 0, 0, 0]
   var values: seq[int]
