@@ -1,5 +1,5 @@
 # AdventOfCode2018
-Nim solutions of Advent of Code 2018.
+Nim solutions to Advent of Code 2018.
 
 These are my solutions to Advent of Code 2018 problems.
 
