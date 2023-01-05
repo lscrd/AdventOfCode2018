@@ -4,9 +4,7 @@ const
   Players = 441
   Rounds = 71_032
 
-var
-  ring: DoublyLinkedRing[int]
-  scores: array[Players, int]
+type Scores = array[Players, int]
 
 proc addMarble(ring: var DoublyLinkedRing[int]; marble: int) =
   ## Add a marble in the ring.
@@ -22,11 +20,12 @@ proc removedMarble(ring: var DoublyLinkedRing[int]): int =
   ring.head = node.next
   ring.remove(node)
 
-proc run(ring: var DoublyLinkedRing; scores: var openarray[int]; rounds: int) =
-  ## Run the game for the given number of rounds.
+proc runGame(rounds: int; scores: var Scores) =
+  ## Run the game for the given number of rounds and return the scores.
 
-  # Add first marble.
+  var ring: DoublyLinkedRing[int]
   ring.append(0)
+  scores.reset()
 
   # Process other marbles.
   var player = 0
@@ -40,10 +39,11 @@ proc run(ring: var DoublyLinkedRing; scores: var openarray[int]; rounds: int) =
 
 
 ### Part 1 ###
-run(ring, scores, Rounds)
+var scores: Scores
+runGame(Rounds, scores)
 echo "Part 1: ", max(scores)
 
 
 # Part 2.
-run(ring, scores, Rounds * 100)
+runGame(Rounds * 100, scores)
 echo "Part 2: ", max(scores)
