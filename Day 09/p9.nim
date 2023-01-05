@@ -40,12 +40,10 @@ proc run(ring: var DoublyLinkedRing; scores: var openarray[int]; rounds: int) =
 
 
 ### Part 1 ###
-
 run(ring, scores, Rounds)
 echo "Part 1: ", max(scores)
 
 
 # Part 2.
-
 run(ring, scores, Rounds * 100)
 echo "Part 2: ", max(scores)
