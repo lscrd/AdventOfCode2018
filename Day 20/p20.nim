@@ -1,57 +1,56 @@
-import tables
-import strutils
+import std/[sequtils, strutils, tables]
 
 type
-  Coords = tuple[row, col: int]
-  Direction = enum North, East, South, West
+  Position = tuple[row, col: int]
+  Direction {.pure.} = enum North, East, South, West
   Walls = array[Direction, char]
-  Rooms = OrderedTable[Coords, Walls]
+  Rooms = OrderedTable[Position, Walls]
 
 var
-  rooms = initOrderedTable[Coords, Walls]()   # Each room has four walls.
-  regexp = "data".readFile()
+  rooms: Rooms
+  regexp = readFile("p20.data")
 
-const EMPTY = ['?', '?', '?', '?']    # Initial value for the walls of a room.
+const Empty = ['?', '?', '?', '?']    # Initial value for the walls of a room.
 
-# Build the rooms description.
-proc build(rooms: var Rooms, regexp: string, start: int, coords: Coords): int =
+proc build(rooms: var Rooms; regexp: string; start: int; pos: Position): int {.discardable.} =
+  # Build the rooms description. Return the last position in "regexp".
   result = start
-  var coords = coords
+  var pos = pos
   while true:
     case regexp[result]
 
     of '^':
-      rooms[coords] = EMPTY
+      rooms[pos] = Empty
       inc result
 
     of 'N':
-      rooms[coords][North] = '-'
-      dec coords.row
-      rooms.mgetOrPut((coords.row, coords.col), EMPTY)[South] = '-'
+      rooms[pos][North] = '-'
+      dec pos.row
+      rooms.mgetOrPut(pos, Empty)[South] = '-'
       inc result
 
     of 'E':
-      rooms[coords][East] = '|'
-      inc coords.col
-      rooms.mgetOrPut((coords.row, coords.col), EMPTY)[West] = '|'
+      rooms[pos][East] = '|'
+      inc pos.col
+      rooms.mgetOrPut(pos, Empty)[West] = '|'
       inc result
 
     of 'S':
-      rooms[coords][South] = '-'
-      inc coords.row
-      rooms.mgetOrPut((coords.row, coords.col), EMPTY)[North] = '-'
+      rooms[pos][South] = '-'
+      inc pos.row
+      rooms.mgetOrPut(pos, Empty)[North] = '-'
       inc result
 
     of 'W':
-      rooms[coords][West] = '|'
-      dec coords.col
-      rooms.mgetOrPut((coords.row, coords.col), EMPTY)[East] = '|'
+      rooms[pos][West] = '|'
+      dec pos.col
+      rooms.mgetOrPut(pos, Empty)[East] = '|'
       inc result
 
     of '(':
       while true:
         # Process each part of the subexpression.
-        result = rooms.build(regexp, result + 1, coords)
+        result = rooms.build(regexp, result + 1, pos)
         if regexp[result] == ')':
           inc result
           break
@@ -61,80 +60,87 @@ proc build(rooms: var Rooms, regexp: string, start: int, coords: Coords): int =
 
     of '$':
       # Adjust walls.
-      for c, walls in rooms.pairs:
+      for roomPos, walls in rooms.pairs:
         for dir, wall in walls:
           if wall == '?':
-            rooms[c][dir] = '#'
+            rooms[roomPos][dir] = '#'
       break
 
     else:
       discard
 
-# Compare two room élements in the room table. To be used by "sort".
-proc roomcmp(x, y: (Coords, Walls)): int = cmp(x[0], y[0])
+proc roomCmp(x, y: (Position, Walls)): int =
+  ## Compare two room élements in the room table. To be used by "sort".
+  cmp(x[0], y[0])
 
-# Display the map of the rooms.
 proc display(rooms: Rooms) {.used.} =
-  const none = -10000000
+  ## Display the map of the rooms.
+  const None = -10000000
   var map: seq[string]
-  var row = none
-  for coords, walls in rooms.pairs:
-    if row != coords.row:
-      row = coords.row
-      map.add("#")
-      map.add("#")
-    map[^2].add(walls[North])
-    map[^2].add('#')
-    map[^1].add('.')
-    map[^1].add(walls[East])
+  var row = None
+  for pos, walls in rooms.pairs:
+    if row != pos.row:
+      row = pos.row
+      map.add "#"
+      map.add "#"
+    map[^2].add walls[North]
+    map[^2].add '#'
+    map[^1].add '.'
+    map[^1].add walls[East]
   # Add last line.
-  map.add("#".repeat(map[0].len))
+  map.add repeat("#", map[0].len)
   # Draw the map.
   for line in map:
     echo line
 
-# Return the coordinates of the room located at direction "dir' from room at "coords".
-proc getCoords(coords: Coords, dir: Direction): Coords =
+# Return the position of the room located at direction "dir' from room at "pos".
+proc getPosition(pos: Position; dir: Direction): Position =
   case dir
   of North:
-    (coords.row - 1, coords.col)
+    (pos.row - 1, pos.col)
   of East:
-    (coords.row, coords.col + 1)
+    (pos.row, pos.col + 1)
   of South:
-    (coords.row + 1, coords.col)
+    (pos.row + 1, pos.col)
   of West:
-    (coords.row, coords.col - 1)
+    (pos.row, pos.col - 1)
 
-const INFINITY = 100000000
+const Infinity = 100_000_000
 
-# Build the table of shortest path lengths for each room.
-proc shortestPathLengths(rooms: Rooms): Table[Coords, int] =
+proc shortestPathLengths(rooms: Rooms): Table[Position, int] =
+  ## Build the table of shortest path lengths for each room.
   let n = rooms.len
   result = [((0, 0), 0)].toTable()
   while result.len < n:
-    for coords, length in result.pairs:
+    for (pos, length) in result.pairs.toSeq():
       for dir in Direction.low..Direction.high:
-        if rooms[coords][dir] in ['-', '|']:
-          let nextCoords = coords.getCoords(dir)
-          if result.getOrDefault(nextCoords, INFINITY) > length + 1:
-            result[nextCoords] = length + 1
+        if rooms[pos][dir] in ['-', '|']:
+          let nextPos = pos.getPosition(dir)
+          if result.getOrDefault(nextPos, Infinity) > length + 1:
+            result[nextPos] = length + 1
 
-var coords: Coords = (0, 0)
-discard rooms.build(regexp, 0, coords)
-rooms.sort(roomcmp)
+# Build the map or rooms.
+var pos: Position = (0, 0)
+rooms.build(regexp, 0, pos)
+rooms.sort(roomCmp)
+
 # Find shortest paths for each room.
 let pathLengths = rooms.shortestPathLengths()
 
-#######################################################
-# Part 1: find the room with the longest shortest path.
+
+### Part 1 ###
+
+# Find the room with the longest shortest path.
 var maxLength = 0
-for coords, length in pathLengths.pairs:
+for pos, length in pathLengths.pairs:
   if length > maxLength:
     maxLength = length
 echo "Part 1: ", maxLength
 
-#########################################################################
-# Part 2: find the number of rooms with a shortest path of at least 1000.
+
+### Part 2 ###
+
+# Find the number of rooms with a shortest path of at least 1000.
 var count = 0
 for coords, length in pathLengths.pairs:
   if length >= 1000:
