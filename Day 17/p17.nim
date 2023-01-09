@@ -1,14 +1,15 @@
-import strutils
-import strscans
+import std/strscans
 
-type Coords = tuple[x, y: int]
+type
+  Coords = tuple[x, y: int]
+  Map = seq[string]
 
 # Parse the lines.
 var lines: seq[tuple[xrange, yrange: Slice[int]]]   # List of parsed lines.
 var x1, x2, y1, y2: int
 var xmin, ymin = 10000
 var xmax, ymax = -1
-for line in "data".lines:
+for line in lines("p17.data"):
   if line.scanf("x=$i, y=$i..$i", x1, y1, y2):
     x2 = x1
   elif line.scanf("y=$i, x=$i..$i", y1, x1, x2):
@@ -19,15 +20,15 @@ for line in "data".lines:
   if y1 < ymin: ymin = y1
   if x2 > xmax: xmax = x2
   if y2 > ymax: ymax = y2
-  lines.add((Slice[int](a: x1, b: x2), Slice[int](a: y1, b: y2)))
+  lines.add (Slice[int](a: x1, b: x2), Slice[int](a: y1, b: y2))
 
 # Create the map.
 dec xmin                      # Add one square to the left.
 inc xmax                      # Add one square to the right.
 let xsize = xmax - xmin + 1
-var map = newSeq[seq[char]](ymax + 1)
+var map: Map = newSeq[string](ymax + 1)
 for item in map.mitems:
-  item = newSeq[char](xsize)
+  item = newString(xsize)
   for c in item.mitems: c = '.'
 map[0][500 - xmin] = '+'
 
@@ -38,19 +39,19 @@ for line in lines:
       map[y][x - xmin] = '#'
 
 # Display the map.
-proc display(map: seq[seq[char]]) {.used.} =
+proc display(map: Map) {.used.} =
   for row in map:
-    echo row.join()
-  echo ""
+    echo row
+  echo()
 
 # Simulate water flowing.
-proc simulate(map: var seq[seq[char]]; xmin, xmax: int) =
+proc simulate(map: var Map; xmin, xmax: int) =
   var waterPoints: seq[Coords] = @[(500 - xmin, 0)]
   var mapChanged = true
 
   while mapChanged:
     mapChanged = false
-    let prevcount = waterPoints.len
+    let prevCount = waterPoints.len
 
     for idx in 0..waterPoints.high:
       let point = waterPoints[idx]
@@ -63,7 +64,7 @@ proc simulate(map: var seq[seq[char]]; xmin, xmax: int) =
       let yp = y + 1
       let c = map[yp][x]
       if c == '.':
-        waterPoints.add((x, yp))
+        waterPoints.add (x, yp)
         map[yp][x] = '|'
       elif c == '|':
         # Already processed.
@@ -101,7 +102,7 @@ proc simulate(map: var seq[seq[char]]; xmin, xmax: int) =
         # Change status of left squares either to '|' (flowing) or '~' (resting).
         for xp in countdown(x - 1, 0, 1):
           if map[y][xp] == '.':
-            waterPoints.add((xp, y))
+            waterPoints.add (xp, y)
             map[y][xp] = c
           else:
             # Already processed or encountered '#'.
@@ -112,7 +113,7 @@ proc simulate(map: var seq[seq[char]]; xmin, xmax: int) =
         # Change status of right squares either to '|' (flowing) or '~' (resting).
         for xp in (x + 1)..xmax:
           if map[y][xp] == '.':
-            waterPoints.add((xp, y))
+            waterPoints.add (xp, y)
             map[y][xp] = c
           else:
             # Already processed or encountered '#'.
@@ -121,7 +122,7 @@ proc simulate(map: var seq[seq[char]]; xmin, xmax: int) =
               # Encountered a square without '#' or '~' under it. Stop modifications.
               break
 
-    if waterPoints.len != prevcount:
+    if waterPoints.len != prevCount:
       mapChanged = true
 
 
@@ -135,5 +136,9 @@ for y in ymin..ymax:
       inc count1
     elif c == '~':
       inc count2
+
+### Part 1 ###
 echo "Part 1: ", count1 + count2
+
+### Part 2 ###
 echo "Part 2: ", count2
