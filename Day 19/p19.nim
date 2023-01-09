@@ -1,16 +1,14 @@
-import strutils
-import strscans
-import math
+import std/[math, strscans, strutils]
 
 type
   Registers = array[6, int]
-  Opcode = enum Addr, Addi, Mulr, Muli, Banr, Bani, Borr, Bori
-                Setr, Seti, Gtir, Gtri, Gtrr, Eqir, Eqri, Eqrr
+  Opcode {.pure.} = enum Addr, Addi, Mulr, Muli, Banr, Bani, Borr, Bori
+                         Setr, Seti, Gtir, Gtri, Gtrr, Eqir, Eqri, Eqrr
   Operands = array[1..3, int]
   Instruction = tuple[opcode: Opcode; ops: Operands]
 
-# Execute an instruction.
-proc execute(regs: var Registers, instruction: Instruction) =
+proc execute(regs: var Registers; instruction: Instruction) =
+  ## Execute an instruction.
   let opcode = instruction.opcode
   let op1 = instruction.ops[1]
   let op2 = instruction.ops[2]
@@ -39,14 +37,14 @@ var pcreg = -1
 var program: seq[Instruction]
 var code: string
 var ops: array[1..3, int]
-for line in "data".lines:
+for line in lines("p19.data"):
   if line.scanf("$+ $i $i $i", code, ops[1], ops[2], ops[3]):
-    program.add((parseEnum[Opcode](code), ops))
+    program.add (parseEnum[Opcode](code.capitalizeAscii()), ops)
   elif not line.scanf("#ip $i", pcreg):
     quit "Error while parsing data."
 
-######################################################
-# Part 1.
+
+### Part 1 ###
 
 var pc = 0
 var regs: Registers
@@ -56,10 +54,11 @@ while true:
   pc = regs[pcreg] + 1
   if pc > program.high:
     break
+
 echo "Part 1: ", regs[0]
 
-######################################################
-# Part 2.
+
+### Part 2 ###
 
 # Analyzing the code shows that it computes the sum of all divisors of
 # the number contained in R4, but with a very inefficient algorithm even
@@ -90,5 +89,5 @@ while p < m:
     inc sol, p
     if q != p:
       inc sol, q
-echo "Part 2: ", sol
 
+echo "Part 2: ", sol
