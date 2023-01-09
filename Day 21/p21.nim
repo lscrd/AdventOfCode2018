@@ -1,6 +1,4 @@
-import strutils
-import strscans
-import math
+import std/[strscans, strutils]
 
 type
   Registers = array[6, int]
@@ -9,8 +7,9 @@ type
   Operands = array[1..3, int]
   Instruction = tuple[opcode: Opcode; ops: Operands]
 
-# Execute an instruction.
 proc execute(regs: var Registers, instruction: Instruction) =
+  ## Execute an instruction.
+
   let opcode = instruction.opcode
   let op1 = instruction.ops[1]
   let op2 = instruction.ops[2]
@@ -39,14 +38,14 @@ var pcreg = -1
 var program: seq[Instruction]
 var code: string
 var ops: array[1..3, int]
-for line in "data".lines:
+for line in lines("p21.data"):
   if line.scanf("$+ $i $i $i", code, ops[1], ops[2], ops[3]):
-    program.add((parseEnum[Opcode](code), ops))
+    program.add (parseEnum[Opcode](code.capitalizeAscii()), ops)
   elif not line.scanf("#ip $i", pcreg):
     quit "Error while parsing data."
 
-######################################################
-# Part 1.
+
+### Part 1 ###
 # The program exits when R4 = R0, so find the first value of R4
 # just before the comparison (antepenultimate instruction).
 
@@ -63,8 +62,8 @@ while true:
 
 echo "Part 1: ", firstR4
 
-######################################################
-# Part 2.
+
+### Part 2 ###
 # It’s obvious that values in R4 follows a cycle. So, we have
 # to find the first value already encountered and to return
 # the previous one.
@@ -80,7 +79,7 @@ when not optimizedVersion:
     if pc == program.high - 2:
       if regs[4] in values:
         break
-      values.add(regs[4])
+      values.add regs[4]
     regs[pcreg] = pc
     regs.execute(program[pc])
     pc = regs[pcreg] + 1
@@ -90,8 +89,8 @@ when not optimizedVersion:
 else:
   # Here is an optimized version which is not interpreted.
 
-  # Compute next value of R4.
   proc nextValue(r4: int): int =
+    ## Compute next value of R4.
     var r4 = r4
     var r1: int
     while true:
@@ -106,6 +105,7 @@ else:
   var values: seq[int]
   var r4 = 0
   while r4 notin values:
-    values.add(r4)
+    values.add r4
     r4 = nextValue(r4)
+
   echo "Part 2: ", values[^1]
